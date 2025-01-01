@@ -1,0 +1,42 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}Setting{% endblock %}
+
+{% block body %}
+<div class="container m-auto">
+    <h3 class="display-4 mt-5">Account Setting for <b>{{user.username}}</b></h3>
+    <hr class="mb-3">
+
+    <div class="col-12 col-lg-6 mx-auto">
+        <div class="bg-secondary-subtle rounded-3 p-3 mb-5">
+            <form action="" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="image" class="form-label">Profile Image</label>
+                    <br>
+                    <img src="{{user_profile.profile_img.url}}" width="150" height="150" class="border border-dark" style="border-radius: 50%;" alt="user_profile.user">
+                    <input type="file" name="image" value="{{user_profile.profile_img}}" id="image" class="form-control mt-2">
+                </div>
+
+                <div class="mb-3">
+                    <label for="b-image" class="form-label">Background Image</label>
+                    <img src="{{user_profile.background_img.url}}" class="img-fluid d-block w-50 rounded-3" alt="">
+                    <input type="file" name="b-image" value="{{user_profile.background_img}}" id="b-image" class="form-control mt-2">
+                </div>
+                <div class="my-3">
+                    <label for="about" class="form-label">Bio</label>
+                    <textarea type="text" class="form-control" name="bio" id="about">{{user_profile.bio}}</textarea>
+                </div>
+                <div class="my-3">
+                    <label for="" class="form-label">Location</label>
+                    <input type="text" class="form-control" name="location" id="location" value="{{user_profile.location}}">
+                </div>
+                <div class="mb-3 gap-2 d-flex justify-content-end space-x-3">
+                    <button class="btn btn-secondary"><a class="text-light text-decoration-none" href="/">Cancel</a></button>
+                    <button type="submit" class="btn btn-danger">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

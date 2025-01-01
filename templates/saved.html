@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block title %}Save Posts{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <h3 class="display-4 mt-5 text-center">Saved</h3>
+            <hr class="mb-3">
+            {% if posts %}
+            <div class="row mb-5">
+                {% for post in posts %}
+                <div class="col-6 col-lg-4 m-0 p-0">
+                    <a href="{% url 'single_post' post.post.id %}">
+                        <img src="{{post.post.image.url}}" class="img-fluid img-thumbnail" alt="post.post.title">
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="my-5">
+                <h1 class="text-center">No post(s)</h1>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

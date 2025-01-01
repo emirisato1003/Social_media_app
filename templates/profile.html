@@ -1,0 +1,160 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}{{ user.username }}&nbsp;Profile{% endblock %}
+
+{% block body %}
+<script>
+    function like_handler(id) {
+        const like_btn = document.getElementById(`like-btn-${id}`);
+        const like_count = document.querySelector(`.like-count-${id}`);
+        fetch(`/like?post_id=${id}`)
+            .then(response => response.json())
+            .then(data => {
+                // console.log(data);
+                like_count.innerText = data.like_count;
+                if (data.like_status) {
+                    like_btn.innerHTML = '<i class="bi bi-suit-heart-fill"></i>';
+                } else {
+                    like_btn.innerHTML = '<i class="bi bi-suit-heart"></i>';
+                }
+            });
+    }
+</script>
+
+<div class="container">
+    <!-- START profile images / icon + background -->
+    <div class="row mt-3">
+        <div class="col-12 rounded-5">
+            <div class="img-container">
+                <div class="background-img">
+                    <div id="b-img-box">
+                        <img src="{{ user_profile.background_img.url }}" class="d-block w-100 rounded-3" height="200" alt="">
+                    </div>
+                </div>
+                <!-- <div class="icon-img"> -->
+                <div id="i-img-box" class="icon-img">
+                    <img src="{{ user_profile.profile_img.url }}" alt="{{ user.username }}" loading="lazy" class="mt-2 border border-3 border-light">
+                </div>
+                <!-- </div> -->
+
+                <!-- START edit profile img -->
+                {% if request.user == user %}
+                <div class="d-grid justify-content-end mt-1">
+                    <a href="{% url 'settings' %}" class="btn btn-sm btn-outline-dark rounded-5"><i class="bi bi-gear-fill"></i></a>
+                </div>
+                {% endif %}
+                <!-- END edit profile img -->
+            </div>
+        </div>
+    </div>
+    <!-- END profile images / icon + background -->
+
+    <!-- START user info -->
+    <div class="row">
+        <div class="col-4 mx-auto">
+            <div class="mb-2 text-center">
+                <h3 class="fw-bold mt-4 pt-2">@{{ user }}</h3>
+                <span class="text-secondary">{{user_profile.bio}} | {{ user_profile.location}}</span>
+            </div>
+            <div class="d-flex gap-5 justify-content-center align-items-center">
+                <div class="post text-center px-3">
+                    <b class="fs-5">{{user_posts.count}}</b>
+                    <p class="text-secondary">Posts</p>
+                </div>
+                <div class="following text-center">
+                    <b class="fs-5">{{ following.count }}</b>
+                    <p class="text-secondary">Following</p>
+                </div>
+                <div class="follower text-center px-2">
+                    <b class="fs-5">{{ follower.count }}</b>
+                    <p class="text-secondary">Follower</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4 mx-auto">
+
+            <!-- START follow / unfollow logic -->
+
+            {% if user.is_authenticated %}
+            {% if user != request.user %}
+            <div class="follow d-grid justify-content-center">
+                {% if isFollowing %}
+                <form action="{% url 'unfollow_user' %}" method="POST" class="mb-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="unfollowing" value="{{ user }}">
+                    <input type="submit" class="px-5 py-1 rounded-5 btn btn-dark" value="Unfollow">
+                </form>
+                {% else %}
+                <form action="{% url 'follow_user' %}" method="POST" class="mb-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="following" value="{{ user }}">
+                    <input type="submit" class="px-5 py-1 rounded-5 btn btn-dark" value="Follow">
+                </form>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <!-- END follow / unfollow logic -->
+
+        </div>
+    </div>
+    <!-- END user info -->
+
+    <hr class="text-warning-emphasis">
+
+    <!-- START user posts -->
+    <div class="row mb-5">
+        {% if not user_posts %}
+        <h1 class="text-center">No post yet</h1>
+        {% else %}
+        {% for posts in user_posts %}
+        <div class="col-6 col-md-4 col-lg-3 mt-3">
+            <div class="img-container">
+                {% if posts.image %}
+                <img src="{{ posts.image.url }}" alt="{{ posts.title }}" class="img-fluid">
+                <div class="overlay">
+                    <div class="d-flex justify-content-between mt-2 mx-3">
+                        <p class="text-light fw-bolder">
+                            {{ posts.category }}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="px-2">
+                <div class="d-flex justify-content-between">
+                    {% if posts.title %}
+                    <small class="mb-0">
+                        <a href="{% url 'single_post' posts.id %}" class="text-dark">{{ posts.title }}</a>
+                    </small>
+                    {% endif %}
+                    <!-- START like section -->
+                    <span class="liked d-flex gap-1">
+                        <small class="text-dark like-count-{{ posts.id }}">{{ posts.post_like.count }}</small>
+                        <div id="like-btn-{{ posts.id }}" class="liked text-danger" onclick="like_handler({{ posts.id }})">
+                            {% if posts.id in user_liked %}
+                            <i class="bi bi-suit-heart-fill"></i>
+                            {% endif %}
+                            {% if not posts.id in user_liked %}
+                            <i class="bi bi-suit-heart"></i>
+                            {% endif %}
+                        </div>
+                    </span>
+                    <!-- END like section -->
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+    <!-- END user posts -->
+
+</div>
+
+
+
+
+{% endblock %}

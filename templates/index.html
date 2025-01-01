@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block body %}
+<main class="container-fluid">
+    <div class="row mt-3">
+        <div class="col-6 mx-auto">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <div class="row mt-3">
+        {% for posts in all_post reversed %}
+        <div class="col-6 col-md-4 col-lg-3 col-xl-2 p-2">
+            <div class="contents">
+                <a href="{% url 'single_post' posts.id %}"><img src="{{posts.image.url}}" alt="" class="img-fluid shadow"></a>
+                <div class="d-flex justify-content-between m-0">
+                    <div class="user-caption">
+                        {% if posts.caption %}
+                        <div class="ms-2">
+                            <small class="text-secondary-emphasis">{{posts.caption}}</small>
+                        </div>
+                        {% endif %}
+                        <div class="my-1 user-icon">
+                            <a href="{% url 'profile' posts.user.id %}" class="text-decoration-none text-dark">
+                                <img src="https://imgs.search.brave.com/c-ZkmWHi90ABMwIgXuOM9t7PIR6CWntGKT6GhpwE32A/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzAwLzY1Lzc3LzI3/LzM2MF9GXzY1Nzcy/NzE5X0ExVVY1a0xp/NW5DRVdJMEJOTExp/RmFCUEVrVWJ2NUZ2/LmpwZw" alt="" class="rounded-5 border" height="30" width="30">
+                                {{posts.user}}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="like-container">
+                        <small class="text-secondary">
+                            {% if 2 > posts.post_like.count %}
+                            {{posts.post_like.count}}&nbsp;like
+                            {% else %}
+                            {{posts.post_like.count}}&nbsp;likes
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}
+
+<!-- https://imgs.search.brave.com/c-ZkmWHi90ABMwIgXuOM9t7PIR6CWntGKT6GhpwE32A/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzAwLzY1Lzc3LzI3/LzM2MF9GXzY1Nzcy/NzE5X0ExVVY1a0xp/NW5DRVdJMEJOTExp/RmFCUEVrVWJ2NUZ2/LmpwZw -->

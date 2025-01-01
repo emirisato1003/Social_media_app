@@ -1,0 +1,242 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block title %}Single Post{% endblock %}
+
+{% block body %}
+<script>
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length == 2) return parts.pop().split(';').shift();
+    }
+
+    function like_handler(id) {
+        const like_btn = document.getElementById(`like-btn-${id}`);
+        const like_count = document.querySelector(`.like-count-${id}`);
+        fetch(`/like?post_id=${id}`)
+            .then(response => response.json())
+            .then(data => {
+                // console.log(data);
+                like_count.innerText = data.like_count;
+                if (data.like_status) {
+                    like_btn.innerHTML = '<i class="bi bi-suit-heart-fill"></i>';
+                } else {
+                    like_btn.innerHTML = '<i class="bi bi-suit-heart"></i>';
+                }
+            });
+    }
+
+    function submit_handler(id) {
+        const title = document.querySelector(`#edit_post_title_${id}`).value;
+        const caption = document.querySelector(`#edit_post_caption_${id}`).value;
+        // const category = document.querySelector(`#category_select_${id}`).value;
+        const modal = document.querySelector(`#modal_edit_post_${id}`);
+        fetch(`/edit/${id}`, {
+            method: 'POST',
+            headers: { 'Content-type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify({
+                title: title,
+                caption: caption,
+            })
+        })
+            .then(response => response.json())
+            .then(result => {
+                title.innerHTML = result.data['title'];
+                caption.innerHTML = result.data['caption'];
+                // category.innerHTML = result.data['category'];
+                // making sure if this posttitle, etc are working
+                const post_title = document.getElementById('post_title');
+                const post_caption = document.getElementById('post_caption');
+                // const post_category = document.getElementById('post_category');
+                post_title.innerHTML = result.data['title'];
+                post_caption.innerHTML = result.data['caption'];
+                // post_category.innerHTML = result.data['category'];
+            });
+    }
+
+    function toggle_menu() {
+        const menu_bar = document.getElementById('menu-bar');
+        menu_bar.style.display = menu_bar.style.display === 'none' ? 'block' : 'none';
+    }
+</script>
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-10 mx-auto p-sm-0">
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <!-- START post image & details + comment -->
+            <div class="row">
+
+                <!-- START image section -->
+                <div class="col-12 col-lg-6">
+                    <img src="{{ post.image.url }}" class="img-fluid" width="600" alt="">
+
+                    <!-- START post edit & delete function -->
+                    {% if post.user == request.user %}
+                    <div class="menu-btn mt-3">
+                        <button class="btn btn-sm btn-outline-dark rounded-5" onclick="toggle_menu()">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                    </div>
+                    <div class="menu-container">
+                        <ul class="menu-bar bg-dark list-unstyled" id="menu-bar">
+                            <!-- Button trigger modal -->
+                            <li class="py-2 ps-2 pe-4 text-light" data-bs-toggle="modal" data-bs-target="#modal_edit_post_{{post.id}}">Edit</li>
+                            <!-- <li class="py-2 ps-2 pe-4 rounded-bottom-2 text-light" onclick="delete_handler()">Delete</li> -->
+                        </ul>
+
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="modal_edit_post_{{ post.id }}" tabindex="-1" aria-labelledby="modal_edit_post_{{ post.id }}_label" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="modal_edit_post_{{ post.id }}_label">Edit Post</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <!-- modal body start -->
+                                    <div class="modal-body">
+                                        <label for="inputGroupFile04" class="form-label">Current Image*</label>
+                                        <br>
+                                        <output><img src="{{ post.image.url }}" class="img-fluid mb-3 w-50" alt="{{post.title}}"></output>
+                                        <!-- edit section starts -->
+                                        <div class="mb-3">
+                                            <label for="edit_post_title_{{post.id}}" class="form-label">Title*</label>
+                                            <input type="text" name="title" class="form-control" id="edit_post_title_{{post.id}}" value="{{ post.title }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="edit_post_caption_{{post.id}}" class="form-label">Caption</label>
+                                            <textarea class="form-control" id="edit_post_caption_{{post.id}}" name="caption" rows="3">{{ post.caption}}</textarea>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <label for="category_select_{{post.id}}" class="form-label">Category</label>
+                                            <div class="input-group">
+                                                <input class="form-control" type="text" placeholder="Disabled input" aria-label="Disabled input example" value="{{post.category}}" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- modal body ends -->
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary" onclick="submit_handler({{post.id}})" data-bs-dismiss="modal">Save changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- END post edit & delete function -->
+                    </div>
+                    {% endif %}
+                </div>
+                <!-- END image section -->
+
+                <!-- START detail + comment content -->
+                <div class="col-12 col-lg-6 mt-3">
+                    <div class="detail-content">
+                        <div class="text-secondary" id="post_category">{{post.category}}</div>
+                        <h2 id="post_title">{{post.title }}</h2>
+                        {% if post.caption %}
+                        <p class="fw-lighter fs-5" id="post_caption">{{ post.caption }}</p>
+                        {% endif %}
+                        <p><a href="{% url 'profile' post.user.id %}" class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"><i class="bi bi-person-circle"></i>&nbsp;{{ post.user }}</a></p>
+                    </div>
+                    <!-- END detail content -->
+
+                    <!-- START like & save function -->
+                    <div class="d-flex gap-3 mt-4 mb-1">
+                        <!-- like function -->
+                        <div class="liked d-flex gap-1 fs-5">
+                            <div id="like-btn-{{ post.id }}" class="liked text-danger" onclick="like_handler({{ post.id }})">
+                                {% if post.id in user_liked %}
+                                <i class="bi bi-suit-heart-fill"></i>
+                                {% else %}
+                                <i class="bi bi-suit-heart"></i>
+                                {% endif %}
+                            </div>
+                            <small class="like-count-{{post.id }} text-dark">{{ post.post_like.count}}</small>
+                        </div>
+                        <!-- save function -->
+                        {% if user.is_authenticated %}
+                        <div class="save-btn fs-5" id="save-btn">
+                            {% if post.id in user_saved %}
+                            <a href="/save?post_id={{ post.id }}" class="text-primary-emphasis"><i class="bi bi-bookmark-fill"></i></a>
+                            {% else %}
+                            <a href="/save?post_id={{ post.id }}" class="text-primary-emphasis"><i class="bi bi-bookmark"></i></a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- END like & save function -->
+
+                    <hr class="text-warning-emphasis mt-0">
+
+                    <!-- START comment section -->
+                    <div class="mt-5">
+                        <h5>Comments</h5>
+                        {% if comments %}
+                        <p>comment here</p>
+                        {% else %}
+                        <p>No comments.</p>
+                        {% endif %}
+                        {% if user.is_authenticated %}
+                        <form id="comment_form" class="mx-3" action="" method="POST">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <input type="text" class="form-control rounded-start-5" placeholder="Comment">
+                                <button class="btn btn-warning rounded-end-5" type="button" id="button-addon2"><i class="bi bi-send-fill"></i></button>
+                            </div>
+                        </form>
+                        {% endif%}
+                    </div>
+                    <!-- END comment section -->
+
+                </div>
+                <!-- END post image & details + comments -->
+            </div>
+        </div>
+    </div>
+
+    <!-- START related post -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="text-center">More to explore</h3>
+        </div>
+    </div>
+
+    <hr class="text-warning-emphasis">
+
+    <div class="row my-5">
+        <div class="col-12 d-flex justify-content-center flex-wrap gap-3">
+            {% for posts in all_posts %}
+            {% if posts != post %}
+            <div class="f-container">
+                <div class="img-container">
+                    <img src="{{ posts.image.url }}" alt="{{ posts.title }}" class="img-fluid" width="220">
+                    <a href="{% url 'single_post' posts.id %}">
+                        <div class="overlay d-flex justify-content-around">
+                            <div class="d-grid align-items-end">
+                                <span class="text-light fw-bolder m-2">
+                                    {{ posts.title }}
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    <!-- END related post -->
+
+</div>
+
+{% endblock %}

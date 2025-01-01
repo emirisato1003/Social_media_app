@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+{% block title %}Upload{% endblock %}
+{% load static %}
+
+{% block body %}
+<script>
+    function switch_field() {
+        const category_select = document.getElementById('category_select');
+        const category_input = document.getElementById('category_input');
+        const field_btn = document.getElementById('field-btn');
+        if (category_select.hasAttribute('hidden')) {
+            category_select.removeAttribute('hidden');
+            category_input.setAttribute('hidden', '');
+            field_btn.innerHTML = '<i class="bi bi-plus-circle-fill"></i>&nbsp;Add Category';
+        } else {
+            category_select.setAttribute('hidden', '');
+            category_input.removeAttribute('hidden');
+            field_btn.innerHTML = '<i class="bi bi-check2-square"></i>&nbsp;Select Category';
+        }
+    }
+</script>
+
+<div class="container">
+    <div class="row my-5">
+        <div class="col-12 col-lg-8 mx-auto">
+            <h3 class="display-4">Upload</h3>
+    <hr class="mb-3">
+            <div class="mt-2">
+                <form action="{% url 'upload' %}" class="bg-secondary-subtle p-3 rounded-3" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label for="inputGroupFile04" class="form-label">Upload Image*</label>
+                    <br>
+                    <output></output>
+                    <div class="input-group">
+                        <input type="file" name="img_file" class="form-control" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04" aria-label="Upload" required>
+                    </div>
+                    <div class="form-text mb-3" id="basic-addon4">Example help text goes outside the input group.</div>
+                    <div class="mb-3">
+                        <label for="exampleFormControlInput1" class="form-label">Title*</label>
+                        <input type="text" name="title" class="form-control" id="exampleFormControlInput1" placeholder="Add a title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleFormControlTextarea1" class="form-label">Caption</label>
+                        <textarea class="form-control" id="exampleFormControlTextarea1" name="caption" rows="3">Add a detailed Caption</textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="category_select" class="form-label">Category*</label>
+                        <div class="input-group" id="category_select">
+                            <select name="category_select" class="form-select" aria-label="Default select example">
+                                <option selected>Open this select menu</option>
+                                {% for categories in all_category %}
+                                <option value="{{ categories.id }}">{{ categories }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="input-group" id="category_input" hidden>
+                            <input type="text" class="form-control" name="category_input" placeholder="Add new category">
+                        </div>
+
+                        <div class="d-grid justify-content-end mt-2">
+                            <div id="field-btn" class="btn btn-dark fs-6 rounded-4" onclick="switch_field()"><i class="bi bi-plus-circle-fill"></i>&nbsp;Add Category</div>
+                        </div>
+
+                        <div class="mt-3">
+                            <input type="submit" class="btn btn-danger px-4" value="Post">
+                            <button class="btn btn-secondary"><a class="text-light text-decoration-none" href="/">Cancel</a></button>
+                        </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
